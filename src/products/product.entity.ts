@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { ProductType } from './dto/create-product.dto';
 
 @Entity()
 export class Product {
@@ -8,27 +9,31 @@ export class Product {
   @Column()
   name: string;
 
-  @Column()
-  sku: string;
+  @Column({ nullable: true })
+  sku?: string;
 
   @Column({ nullable: true })
-  barcode: string;
+  barcode?: string;
 
-  @Column()
-  type: 'SERVICE' | 'INVENTORY';
+  @Column({
+    type: 'enum',
+    enum: ProductType,
+    default: ProductType.INVENTORY,
+  })
+  type: ProductType;
 
-  @Column('decimal')
+  @Column('float')
   price: number;
 
   @Column({ default: false })
   is_composite: boolean;
 
   @Column({ nullable: true })
-  image_url: string;
+  image_url?: string;
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 }

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ProductService } from './products/product.service';
 import { ProductController } from './products/product.controller';
-import { TenantProvisioningService } from './tenant-provisioning/tenant-provisioning.service';
-import { TenantModule } from './tenants/tenant.module';
+import { TenantProvisioningService } from './tenancy/tenancy.service';
+import { TenantModule } from './tenancy/tenancy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { TenantController } from './tenancy/tenancy.controller';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
     TenantModule,
   ],
-  controllers: [ProductController],
-  providers: [ProductService, TenantProvisioningService],
+  controllers: [ProductController, TenantController],
+  providers: [ProductService, TenantProvisioningService, TenantController],
 })
 export class AppModule {}

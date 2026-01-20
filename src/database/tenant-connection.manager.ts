@@ -3,14 +3,14 @@ import { createTenantDataSource } from './tenant.datasource';
 
 const tenantConnections = new Map<string, DataSource>();
 
-export async function getTenantConnection(tenantId: string): Promise<DataSource> {
-  if (tenantConnections.has(tenantId)) {
-    return tenantConnections.get(tenantId)!;
+export async function getTenantConnection(dbName: string): Promise<DataSource> {
+  if (tenantConnections.has(dbName)) {
+    return tenantConnections.get(dbName)!;
   }
 
-  const dbName = `intellisales_tenant_${tenantId}`;
+  // Use the exact dbName, no prefix change
   const dataSource = createTenantDataSource(dbName);
   await dataSource.initialize();
-  tenantConnections.set(tenantId, dataSource);
+  tenantConnections.set(dbName, dataSource);
   return dataSource;
 }

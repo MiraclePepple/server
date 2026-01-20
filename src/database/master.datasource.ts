@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Tenant } from '../tenants/tenant.entity';
+import { Tenant } from '../tenancy/tenancy.entity';
 
 export const MasterDataSource = new DataSource({
   type: 'postgres',

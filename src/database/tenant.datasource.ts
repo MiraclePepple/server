@@ -8,9 +8,10 @@ export function createTenantDataSource(dbName: string) {
     port: parseInt(process.env.DATABASE_PORT || '5432'),
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME || dbName,
+    database: dbName,
     entities: [Product], //more tenant entities here
     migrations: [__dirname + '/../migrations/tenant/*.ts'],
-    synchronize: false,
+    synchronize: true,
   });
+  
 }

@@ -4,13 +4,15 @@ import { createTenantDataSource } from './tenant.datasource';
 const tenantConnections = new Map<string, DataSource>();
 
 export async function getTenantConnection(dbName: string): Promise<DataSource> {
-  if (tenantConnections.has(dbName)) {
-    return tenantConnections.get(dbName)!;
+  // Add tenant_ prefix to match the database name created during provisioning
+  const fullDbName = `tenant_${dbName}`;
+  
+  if (tenantConnections.has(fullDbName)) {
+    return tenantConnections.get(fullDbName)!;
   }
 
-  // Use the exact dbName, no prefix change
-  const dataSource = createTenantDataSource(dbName);
+  const dataSource = createTenantDataSource(fullDbName);
   await dataSource.initialize();
-  tenantConnections.set(dbName, dataSource);
+  tenantConnections.set(fullDbName, dataSource);
   return dataSource;
 }

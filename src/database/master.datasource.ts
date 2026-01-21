@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { Tenant } from '../tenancy/tenancy.entity';
 
@@ -9,6 +10,6 @@ export const MasterDataSource = new DataSource({
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME || 'intellisales_master',
   entities: [Tenant],
-  synchronize: true,
+  synchronize: false,
   migrations: [__dirname + '/../migrations/master/*.ts'],
 });

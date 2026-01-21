@@ -1,8 +1,6 @@
-// product.service.ts
 import { Injectable } from '@nestjs/common';
 import { getTenantConnection } from '../database/tenant-connection.manager';
 import { Product } from './product.entity';
-import { createTenantDataSource } from 'src/database/tenant.datasource';
 import { CreateProductDto } from './dto/create-product.dto';
 
 @Injectable()
@@ -14,7 +12,6 @@ export class ProductService {
   }
 
   async createProduct(tenantName: string, data: CreateProductDto) {
-    // Reuse connection manager instead of creating new DataSource every time
     const dataSource = await getTenantConnection(tenantName);
     const productRepo = dataSource.getRepository(Product);
 

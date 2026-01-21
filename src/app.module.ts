@@ -4,7 +4,7 @@ import { ProductController } from './products/product.controller';
 import { TenantProvisioningService } from './tenancy/tenancy.service';
 import { TenantModule } from './tenancy/tenancy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TenantController } from './tenancy/tenancy.controller';
+import { Tenant } from './tenancy/tenancy.entity';
 
 @Module({
   imports: [
@@ -15,13 +15,14 @@ import { TenantController } from './tenancy/tenancy.controller';
       username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME || 'intellisales_master',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      // Only include Master entities here (Tenant)
+      entities: [Tenant],
       synchronize: true,
     }),
 
     TenantModule,
   ],
-  controllers: [ProductController, TenantController],
-  providers: [ProductService, TenantProvisioningService, TenantController],
+  controllers: [ProductController],
+  providers: [ProductService, TenantProvisioningService],
 })
 export class AppModule {}

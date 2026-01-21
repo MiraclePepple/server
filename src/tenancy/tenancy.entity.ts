@@ -20,6 +20,9 @@ export class Tenant {
   @Column()
   currency: string;
 
+  @Column({ nullable: false })
+  db_name: string;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -28,5 +31,4 @@ export class Tenant {
 
   @Column({ type: 'timestamptz', nullable: true })
   deleted_at: Date;
-
 }

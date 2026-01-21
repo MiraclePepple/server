@@ -18,7 +18,7 @@ export class ProductController {
     @Req() req,
     @Body() data: CreateProductDto,
   ) {
-    return this.productService.createProduct(req.tenantId, data);
+    return this.productService.createProduct(req.tenantDbName, data);
   }
 
   @Get(':id')
@@ -26,6 +26,6 @@ export class ProductController {
     @Req() req,
     @Param('id') id: string,
   ) {
-    return this.productService.findById(req.tenantId, id);
+    return this.productService.findById(req.tenantDbName, id);
   }
 }

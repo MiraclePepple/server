@@ -5,6 +5,7 @@ import { TenantProvisioningService } from './tenancy/tenancy.service';
 import { TenantModule } from './tenancy/tenancy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tenant } from './tenancy/tenancy.entity';
+import { ProductModule } from './products/product.module';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { Tenant } from './tenancy/tenancy.entity';
       synchronize: true,
     }),
 
-    TenantModule,
+    TenantModule, ProductModule
   ],
   controllers: [ProductController],
   providers: [ProductService, TenantProvisioningService],

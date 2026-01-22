@@ -46,13 +46,24 @@ export class AuthService {
     const tenantDataSource = createTenantDataSource(tenant.db_name);
     await tenantDataSource.initialize();
     const userRepo = tenantDataSource.getRepository(require('../users/user.entity').User);
-    const user = await userRepo.findOne({ where: [
-      { username: usernameOrEmail },
-      { email: usernameOrEmail },
-    ], relations: ['roles'] });
-    if (user && await require('bcryptjs').compare(password, user.password)) {
+    const user = await userRepo.findOne({
+      where: [
+        { username: usernameOrEmail },
+        { email: usernameOrEmail },
+      ],
+      relations: ['roles'],
+    });
+
+    if (user && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
-      return { ...result, tenantId: tenant.tenant_id, dbName: tenant.db_name };
+      return {
+        ...result,
+        user_id: user.user_id, // Ensure user_id is included
+        username: user.username, // Ensure username is included
+        roles: user.roles, // Ensure roles are included
+        tenantId: tenant.tenant_id,
+        dbName: tenant.db_name,
+      };
     }
     return null;
   }
@@ -61,7 +72,7 @@ export class AuthService {
     const user = await this.validateTenantUser(tenantIdentifier, usernameOrEmail, password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const payload = {
-      sub: user.user_id,
+      sub: user.user_id, // Corrected to use user_id from User entity
       username: user.username,
       roles: user.roles?.map(r => r.name),
       tenantId: user.tenantId,

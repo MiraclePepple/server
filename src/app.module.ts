@@ -6,6 +6,9 @@ import { TenantModule } from './tenancy/tenancy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tenant } from './tenancy/tenancy.entity';
 import { ProductModule } from './products/product.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './users/user.module';
+// Swagger setup is handled in src/swagger.ts and initialized in main.ts
 
 @Module({
   imports: [
@@ -21,9 +24,14 @@ import { ProductModule } from './products/product.module';
       synchronize: true,
     }),
 
-    TenantModule, ProductModule
+    TenantModule, 
+    ProductModule,
+    AuthModule,
+    UserModule
   ],
   controllers: [ProductController],
   providers: [ProductService, TenantProvisioningService],
 })
-export class AppModule {}
+export class AppModule {
+  // No constructor logic here; app bootstrap handled in main.ts
+}

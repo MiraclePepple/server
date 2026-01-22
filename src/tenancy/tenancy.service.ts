@@ -110,14 +110,24 @@ export class TenantService {
       await userRepo.save(adminUser);
       this.logger.log('Admin user created');
 
-      // 3. Return tenant credentials (db name, etc.)
+      // 3. Return tenant credentials with clear identifiers
       return {
-        tenantId: tenant.tenant_id,
-        dbName: tenant.db_name,
-        email: tenant.email,
-        businessName: tenant.business_name,
-        currency: tenant.currency,
-        phoneNumber: tenant.phone_number,
+        success: true,
+        message: 'Business successfully registered!',
+        tenant: {
+          tenantId: tenant.tenant_id,
+          tenantIdentifier: tenant.db_name, // This is what you use for login!
+          businessName: tenant.business_name,
+          email: tenant.email,
+          currency: tenant.currency,
+          phoneNumber: tenant.phone_number,
+        },
+        loginInstructions: {
+          endpoint: 'POST /auth/tenant-login',
+          tenantIdentifier: tenant.db_name,
+          username: data.email,
+          message: 'Use these credentials to login to your POS system'
+        }
       };
     } catch (error) {
       this.logger.error('Error during tenant creation', error.stack);

@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../users/user.module';
 import { TenantModule } from '../tenancy/tenancy.module';
+import { AdminModule } from '../admin/admin.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
@@ -11,6 +12,7 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     UserModule,
     TenantModule,
+    AdminModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'changeme',
@@ -19,6 +21,6 @@ import { JwtStrategy } from './jwt.strategy';
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService], // AuthService has JwtService injected
 })
 export class AuthModule {}

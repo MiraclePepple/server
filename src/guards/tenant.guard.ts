@@ -21,6 +21,7 @@ export class TenantGuard implements CanActivate {
 
     request.tenant = tenant;
     request.tenantDbName = tenant.db_name;
+    request.tenantId = tenant.tenant_id; // Add this for consistency
 
     return true;
   }

@@ -39,7 +39,7 @@ export class TenantService {
     currency: string;
     phoneNumber: string;
   }) {
-    // Save tenant in MASTER database (without db_name first)
+    // 1. Save tenant in MASTER database (without db_name first)
     const tenant = await this.tenantRepo.save({
       business_name: data.businessName,
       email: data.email,
@@ -48,16 +48,46 @@ export class TenantService {
     });
     const tenantDbName = `${slugifyTenantName(data.businessName)}_${tenant.tenant_id.slice(0, 6)}`;
 
-    // Update tenant with the database name
+    // 2. Provision tenant DB (create DB, run migrations)
+    await this.tenantProvisioningService.provisionTenant(tenantDbName);
+
+    // Create first admin user in tenant DB
+    const tenantDataSource = createTenantDataSource(tenantDbName);
+    await tenantDataSource.initialize();
+    const userRepo = tenantDataSource.getRepository(require('../users/user.entity').User);
+    const roleRepo = tenantDataSource.getRepository(require('../users/role.entity').Role);
+    let adminRole = await roleRepo.findOne({ where: { name: 'admin' } });
+    if (!adminRole) {
+      adminRole = roleRepo.create({ name: 'admin', description: 'Tenant Administrator' });
+      await roleRepo.save(adminRole);
+    }
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(data.password || 'changeme', 10);
+    const adminUser = userRepo.create({
+      username: data.email,
+      email: data.email,
+      password: hashedPassword,
+      full_name: data.businessName,
+      phone: data.phoneNumber,
+      is_active: true,
+      roles: [adminRole],
+    });
+    await userRepo.save(adminUser);
+
+    // 3. Update tenant with the database name
     tenant.db_name = tenantDbName;
     await this.tenantRepo.save(tenant);
 
-    return tenant;
-
-    // Create tenant database at RUNTIME
-    //const tenantDbName = `${slugifyTenantName(data.businessName)}_${tenant.tenant_id.slice(0, 6)}`;
-
-    await this.tenantProvisioningService.provisionTenant(tenantDbName);
+    // 4. Return tenant credentials (db name, etc.)
+    return {
+      tenantId: tenant.tenant_id,
+      dbName: tenant.db_name,
+      email: tenant.email,
+      businessName: tenant.business_name,
+      currency: tenant.currency,
+      phoneNumber: tenant.phone_number,
+      // Add more credentials if needed
+    };
   }
 
   async getTenantById(tenantId: string): Promise<Tenant | null> {

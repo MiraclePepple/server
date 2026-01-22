@@ -1,5 +1,7 @@
 import { DataSource } from 'typeorm';
 import { Product } from '../products/product.entity';
+import { User } from '../users/user.entity';
+import { Role } from '../users/role.entity';
 
 export function createTenantDataSource(dbName: string) {
   return new DataSource({
@@ -9,7 +11,7 @@ export function createTenantDataSource(dbName: string) {
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: dbName,
-    entities: [Product], //more tenant entities here
+    entities: [Product, User, Role], //more tenant entities here
     migrations: [__dirname + '/../migrations/tenant/*.ts'],
     synchronize: true,
   });

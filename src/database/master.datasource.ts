@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-import { Tenant } from '../tenancy/tenancy.entity';
+import { Tenant } from '../tenant/entities/tenancy.entity';
 
 export const MasterDataSource = new DataSource({
   type: 'postgres',

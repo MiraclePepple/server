@@ -1,22 +1,17 @@
 import { Module } from '@nestjs/common';
-import { ProductService } from './products/product.service';
-import { ProductController } from './products/product.controller';
-import { TenantProvisioningService } from './tenancy/tenancy.service';
-import { TenantModule } from './tenancy/tenancy.module';
+import { TenantProvisioningService } from './tenant/services/tenancy.service';
+import { TenantModule } from './tenant/modules/tenancy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Tenant } from './tenancy/tenancy.entity';
-import { SystemAdmin } from './admin/system-admin.entity';
-import { ProductModule } from './products/product.module';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './users/user.module';
-import { AdminModule } from './admin/admin.module';
-import { SetupModule } from './setup/setup.module';
-import { SharedJwtModule } from './shared/shared-jwt.module';
+import { Tenant } from './tenant/entities/tenancy.entity';
+import { SystemAdmin } from './admin/entities/system-admin.entity';
+import { ProductModule } from './products/modules/product.module';
+import { AuthModule } from './auth/modules/auth.module';
+import { UserModule } from './users/modules/user.module';
+import { AdminModule } from './admin/modules/admin.module';
 // Swagger setup is handled in src/swagger.ts and initialized in main.ts
 
 @Module({
   imports: [
-    SharedJwtModule, // Global JWT module
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST || 'localhost',
@@ -33,11 +28,10 @@ import { SharedJwtModule } from './shared/shared-jwt.module';
     ProductModule,
     AuthModule,
     UserModule,
-    AdminModule,
-    SetupModule
+    AdminModule
   ],
-  controllers: [ProductController],
-  providers: [ProductService, TenantProvisioningService],
+  controllers: [], // Remove ProductController - it's provided by ProductModule
+  providers: [TenantProvisioningService], // Remove ProductService - it's provided by ProductModule
 })
 export class AppModule {
   // No constructor logic here; app bootstrap handled in main.ts

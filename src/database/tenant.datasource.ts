@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
-import { Product } from '../products/product.entity';
-import { User } from '../users/user.entity';
-import { Role } from '../users/role.entity';
+import { Product } from '../products/entities/product.entity';
+import { User } from '../users/entities/user.entity';
+import { Role } from '../users/entities/role.entity';
 
 export function createTenantDataSource(dbName: string) {
   return new DataSource({

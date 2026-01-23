@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 import { setupSwagger } from './swagger';
 import { MasterDataSource } from './database/master.datasource';
 import { ValidationPipe } from '@nestjs/common';
-import { SystemAdminService } from './admin/system-admin.service';
+import { SystemAdminService } from './admin/services/system-admin.service';
 
 async function bootstrap() {
   await MasterDataSource.initialize();

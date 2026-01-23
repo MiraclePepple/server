@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { MasterDataSource } from '../database/master.datasource';
-import { Tenant } from '../tenant/entities/tenancy.entity';
+import { MasterDataSource } from '../../database/master.datasource';
+import { Tenant } from '../../tenant/entities/tenancy.entity';
 
 @Injectable()
 export class TenantGuard implements CanActivate {

@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, IsArray, IsUUID, MinLength, IsBoolean } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsArray, MinLength, IsBoolean } from 'class-validator';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'jdoe' })
@@ -33,9 +33,13 @@ export class UpdateUserDto {
   @IsBoolean()
   is_active?: boolean;
 
-  @ApiPropertyOptional({ type: [String], example: ['a1b2c3d4-e5f6-7890-1234-56789abcdef0'] })
+  @ApiPropertyOptional({ 
+    type: [String], 
+    example: ['manager', 'cashier'], 
+    description: 'Array of role names to assign to the user' 
+  })
   @IsOptional()
   @IsArray()
-  @IsUUID(undefined, { each: true })
-  roleIds?: string[];
+  @IsString({ each: true })
+  roleNames?: string[];
 }

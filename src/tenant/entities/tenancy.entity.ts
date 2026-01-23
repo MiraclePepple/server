@@ -11,16 +11,19 @@ export class Tenant {
   @Column({ unique: true })
   email: string;
 
+  @Column({ unique: true, nullable: true })
+  domain: string; // e.g., "company1.intellisales.com" or "company1"
+
   @Column()
   phone_number: string;
 
   @Column({ nullable: true })
-  logo: string;
+  logo: string; // Logo URL or path
 
-  @Column()
+  @Column({ nullable: true })
   currency: string;
 
-  @Column({ nullable: false })
+  @Column({ unique: true })
   db_name: string;
 
   @CreateDateColumn()
@@ -30,5 +33,5 @@ export class Tenant {
   updated_at: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  deleted_at: Date;
+  deleted_at?: Date;
 }

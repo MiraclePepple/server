@@ -1,5 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { TenantProvisioningService } from './tenant/services/tenancy.service';
+import { TenantCacheService } from './shared/services/tenant-cache.service';
+import { RedisService } from './shared/services/redis.service';
 import { TenantModule } from './tenant/modules/tenancy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tenant } from './tenant/entities/tenancy.entity';
@@ -8,6 +10,7 @@ import { ProductModule } from './products/modules/product.module';
 import { AuthModule } from './auth/modules/auth.module';
 import { UserModule } from './users/modules/user.module';
 import { AdminModule } from './admin/modules/admin.module';
+import { DomainTenantMiddleware } from './shared/middleware/domain-tenant.middleware';
 // Swagger setup is handled in src/swagger.ts and initialized in main.ts
 
 @Module({
@@ -31,8 +34,12 @@ import { AdminModule } from './admin/modules/admin.module';
     AdminModule
   ],
   controllers: [], // Remove ProductController - it's provided by ProductModule
-  providers: [TenantProvisioningService], // Remove ProductService - it's provided by ProductModule
+  providers: [TenantProvisioningService, TenantCacheService, RedisService], // Add Redis and cache services
 })
 export class AppModule {
-  // No constructor logic here; app bootstrap handled in main.ts
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(DomainTenantMiddleware)
+      .forRoutes('*'); // Apply to all routes
+  }
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsString, IsEmail, MinLength } from 'class-validator';
+import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
 
 export class CreateTenantDto {
   @ApiProperty({ example: 'My Business', description: 'The name of the business.' })
@@ -23,4 +23,13 @@ export class CreateTenantDto {
   @IsString()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({ 
+    example: 'mybusiness.intellisales.com', 
+    description: 'Custom domain for the tenant (optional). If not provided, will be auto-generated from business name.',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  domain?: string;
 }

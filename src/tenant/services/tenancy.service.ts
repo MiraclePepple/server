@@ -5,6 +5,8 @@ import { MasterDataSource } from '../../database/master.datasource';
 import { Tenant } from '../entities/tenancy.entity';
 import { createTenantDataSource } from '../../database/tenant.datasource';
 import { slugifyTenantName } from '../../shared/utils/slugify';
+import { PermissionService } from '../../users/services/permission.service';
+import { RedisService } from '../../shared/services/redis.service';
 
 @Injectable()
 export class TenantProvisioningService {
@@ -44,6 +46,8 @@ export class TenantService {
     @InjectRepository(Tenant)
     private readonly tenantRepo: Repository<Tenant>,
     private readonly tenantProvisioningService: TenantProvisioningService,
+    private readonly permissionService: PermissionService,
+    private readonly redisService: RedisService,
   ) {}
 
   async createTenant(data: {
@@ -52,6 +56,7 @@ export class TenantService {
     currency: string;
     phoneNumber: string;
     password: string;
+    domain?: string; // Optional domain for subdomain access
   }) {
     try {
       this.logger.log('Starting tenant creation process');
@@ -62,16 +67,26 @@ export class TenantService {
         throw new Error(`Tenant with email ${data.email} already exists`);
       }
 
-      // Generate db_name before saving the tenant
-      const tenantDbName = `${slugifyTenantName(data.businessName)}_${Math.random().toString(36).substring(2, 8)}`;
+      // Check if domain is already taken (if provided)
+      if (data.domain) {
+        const existingDomain = await this.tenantRepo.findOne({ where: { domain: data.domain } });
+        if (existingDomain) {
+          throw new Error(`Domain ${data.domain} is already taken`);
+        }
+      }
 
-      // 1. Save tenant in MASTER database with db_name
+      // Generate db_name and domain before saving the tenant
+      const tenantDbName = `${slugifyTenantName(data.businessName)}_${Math.random().toString(36).substring(2, 8)}`;
+      const tenantDomain = data.domain || `${slugifyTenantName(data.businessName)}.intellisales.com`;
+
+      // 1. Save tenant in MASTER database with db_name and domain
       const tenant = await this.tenantRepo.save({
         business_name: data.businessName,
         email: data.email,
         currency: data.currency,
         phone_number: data.phoneNumber,
-        db_name: tenantDbName, // Assign db_name here
+        db_name: tenantDbName,
+        domain: tenantDomain,
       });
       this.logger.log(`Tenant saved in master DB: ${tenant.tenant_id}`);
 
@@ -85,6 +100,10 @@ export class TenantService {
       const tenantDataSource = createTenantDataSource(tenantName);
       await tenantDataSource.initialize();
       this.logger.log('Tenant data source initialized');
+
+      // Create all permissions for this tenant
+      await this.permissionService.createPermissionsForTenant(tenantName);
+      this.logger.log('Permissions created for tenant');
 
       const userRepo = tenantDataSource.getRepository(require('../../users/entities/user.entity').User);
       const roleRepo = tenantDataSource.getRepository(require('../../users/entities/role.entity').Role);
@@ -110,28 +129,58 @@ export class TenantService {
       await userRepo.save(adminUser);
       this.logger.log('Admin user created');
 
-      // 3. Return tenant credentials with clear identifiers
+      // 3. Cache the new tenant for faster lookups
+      await this.cacheTenantData(tenant);
+
+      // 4. Return tenant credentials with multiple login options
       return {
         success: true,
         message: 'Business successfully registered!',
         tenant: {
           tenantId: tenant.tenant_id,
-          tenantIdentifier: tenant.db_name, // This is what you use for login!
+          tenantIdentifier: tenant.db_name,
           businessName: tenant.business_name,
           email: tenant.email,
           currency: tenant.currency,
           phoneNumber: tenant.phone_number,
+          domain: tenant.domain,
         },
         loginInstructions: {
-          endpoint: 'POST /auth/tenant-login',
-          tenantIdentifier: tenant.db_name,
-          username: data.email,
-          message: 'Use these credentials to login to your POS system'
+          domainLogin: {
+            url: `https://${tenant.domain}`,
+            endpoint: 'POST /auth/domain-login',
+            username: data.email,
+            message: 'Visit your custom domain and login (recommended)',
+          },
+          manualLogin: {
+            endpoint: 'POST /auth/tenant-login',
+            tenantIdentifier: tenant.db_name,
+            username: data.email,
+            message: 'Alternative: Manual tenant login using identifier',
+          },
         }
       };
     } catch (error) {
       this.logger.error('Error during tenant creation', error.stack);
       throw error;
+    }
+  }
+
+  private async cacheTenantData(tenant: Tenant): Promise<void> {
+    try {
+      // Cache by domain
+      if (tenant.domain) {
+        await this.redisService.set(`tenant:domain:${tenant.domain}`, tenant, 3600);
+      }
+      // Cache by db_name 
+      await this.redisService.set(`tenant:db:${tenant.db_name}`, tenant, 3600);
+      // Cache by tenant_id
+      await this.redisService.set(`tenant:id:${tenant.tenant_id}`, tenant, 3600);
+      
+      this.logger.log(`Cached tenant data for: ${tenant.business_name}`);
+    } catch (error) {
+      // Don't fail tenant creation if caching fails
+      this.logger.warn(`Failed to cache tenant data: ${error.message}`);
     }
   }
 

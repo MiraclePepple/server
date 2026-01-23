@@ -7,6 +7,8 @@ import { AdminModule } from '../../admin/modules/admin.module';
 import { AuthService } from '../services/auth.service';
 import { AuthController } from '../controllers/auth.controller';
 import { JwtStrategy } from '../strategies/jwt.strategy';
+import { TenantCacheService } from '../../shared/services/tenant-cache.service';
+import { RedisService } from '../../shared/services/redis.service';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { JwtStrategy } from '../strategies/jwt.strategy';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, TenantCacheService, RedisService],
   controllers: [AuthController],
   exports: [AuthService], // AuthService has JwtService injected
 })

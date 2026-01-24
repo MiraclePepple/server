@@ -13,3 +13,8 @@ export const MasterDataSource = new DataSource({
   synchronize: false,
   migrations: [__dirname + '/../migrations/master/*.ts'],
 });
+
+// Initialize the DataSource
+MasterDataSource.initialize().catch((error) => {
+  console.error('Error during Data Source initialization:', error);
+});

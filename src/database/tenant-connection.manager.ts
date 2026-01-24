@@ -10,10 +10,10 @@ export async function getTenantConnection(dbName: string): Promise<DataSource> {
 
   console.log('Input dbName:', dbName);
   
-  // Add tenant_ prefix to match the database name created during provisioning
-  const fullDbName = `tenant_${dbName}`;
+  // The dbName already includes the tenant_ prefix from provisioning
+  const fullDbName = dbName.startsWith('tenant_') ? dbName : `tenant_${dbName}`;
   
-  console.log('Full database name with prefix:', fullDbName);
+  console.log('Full database name:', fullDbName);
   
   if (tenantConnections.has(fullDbName)) {
     console.log('Using cached connection for:', fullDbName);

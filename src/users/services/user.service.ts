@@ -94,9 +94,10 @@ export class UserService {
     return userRepo.save(user);
   }
 
-  async remove(id: string, tenantDbName: string): Promise<void> {
+  async remove(id: string, tenantDbName: string): Promise<{ message: string }> {
     const dataSource = await getTenantConnection(tenantDbName);
     const userRepo = dataSource.getRepository(User);
     await userRepo.delete(id);
+    return { message: 'User deleted successfully' };
   }
 }

@@ -11,7 +11,7 @@ export class RoleService {
     const roleRepo = tenantConnection.getRepository(Role);
     const permissionRepo = tenantConnection.getRepository(Permission);
 
-    let permissions = [];
+    let permissions: Permission[] = [];
     
     // Find permissions by names if provided
     if (createRoleDto.permissionNames && createRoleDto.permissionNames.length > 0) {

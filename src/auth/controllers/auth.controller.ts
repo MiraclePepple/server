@@ -1,9 +1,8 @@
 import { Controller, Post, Body, UnauthorizedException, Req } from '@nestjs/common';
-import { ApiTags, ApiBody, ApiResponse, ApiHeader } from '@nestjs/swagger';
+import { ApiTags, ApiBody, ApiResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
-import { TenantLoginDto } from '../dto/tenant-login.dto';
-import { DomainLoginDto } from '../dto/domain-login.dto';
+import { AdminLoginDto } from '../dto/admin-login.dto';
 import type { Request } from 'express';
 
 @ApiTags('Auth')
@@ -11,48 +10,95 @@ import type { Request } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+
   @Post('login')
-  @ApiBody({ type: LoginDto })
-  @ApiResponse({ status: 201, description: 'Login successful.' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
-  async login(@Body() body: LoginDto) {
-    const user = await this.authService.validateUser(body.usernameOrEmail, body.password);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+  @ApiOperation({ 
+    summary: 'User Login', 
+    description: 'Login for business users (managers, cashiers, etc.). Enter your email and password. The system will automatically detect which business you belong to.' 
+  })
+  @ApiBody({ 
+    type: LoginDto, 
+    description: 'User login credentials. Enter the email/username and password you use for your business account.',
+    examples: {
+      manager: {
+        summary: 'Manager Login',
+        description: 'Example for a store manager',
+        value: {
+          usernameOrEmail: 'manager@acmestore.com',
+          password: 'MyStorePassword123!'
+        }
+      },
+      cashier: {
+        summary: 'Cashier Login', 
+        description: 'Example for a cashier',
+        value: {
+          usernameOrEmail: 'jane.cashier',
+          password: 'CashierPass456!'
+        }
+      }
     }
-    return this.authService.login(user);
-  }
-
-  @Post('tenant-login')
-  @ApiBody({ type: TenantLoginDto })
-  @ApiResponse({ status: 201, description: 'Tenant login successful.' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials or tenant.' })
-  async tenantLogin(@Body() body: TenantLoginDto) {
-    return this.authService.tenantLogin(body.tenantIdentifier, body.usernameOrEmail, body.password);
-  }
-
-  @Post('domain-login')
-  @ApiBody({ type: DomainLoginDto })
-  @ApiHeader({ 
-    name: 'Host', 
-    description: 'The domain of the tenant (e.g., company1.intellisales.com)',
-    required: true 
   })
   @ApiResponse({ 
     status: 201, 
-    description: 'Domain-based login successful. Tenant automatically detected from domain.' 
+    description: 'Login successful. You will receive a JWT token and your user profile.',
+    example: {
+      access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      user: {
+        user_id: 'uuid',
+        username: 'john.cashier',
+        email: 'john@company.com',
+        roles: ['Cashier'],
+        tenant: {
+          id: 'tenant-uuid',
+          business_name: 'ACME Corporation',
+          domain: 'acme-corp.intellisales.com'
+        },
+        isSystemAdmin: false
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Invalid email/password or user not found.' })
+  async login(@Body() body: LoginDto) {
+    return this.authService.login(body.usernameOrEmail, body.password);
+  }
+
+  @Post('admin/login')
+  @ApiOperation({ 
+    summary: 'System Admin Login', 
+    description: 'Login for system administrators only. This is for IntelliSales platform admins who manage the entire system and all businesses.' 
+  })
+  @ApiBody({ 
+    type: AdminLoginDto, 
+    description: 'System administrator credentials. Only use this if you are a platform admin.',
+    examples: {
+      admin: {
+        summary: 'System Admin Login',
+        description: 'Example for system administrator',
+        value: {
+          username: 'superadmin',
+          password: 'SuperSecureAdminPass123!'
+        }
+      }
+    }
   })
   @ApiResponse({ 
-    status: 401, 
-    description: 'Invalid credentials, domain, or tenant not found.' 
-  })
-  async domainLogin(@Body() body: DomainLoginDto, @Req() req: Request) {
-    const host = req.get('host') || req.hostname;
-    
-    if (!host) {
-      throw new UnauthorizedException('Host header is required for domain-based login');
+    status: 201, 
+    description: 'Admin login successful. JWT token with system-wide privileges.',
+    example: {
+      access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      user: {
+        admin_id: 'admin-uuid',
+        username: 'superadmin',
+        email: 'admin@intellisales.com',
+        isSystemAdmin: true,
+        created_at: '2024-01-01T00:00:00.000Z'
+      }
     }
-    
-    return this.authService.domainLogin(host, body.usernameOrEmail, body.password);
+  })
+  @ApiResponse({ status: 401, description: 'Invalid admin credentials.' })
+  async adminLogin(@Body() body: AdminLoginDto) {
+    return this.authService.adminLogin(body.username, body.password);
   }
+
+
 }

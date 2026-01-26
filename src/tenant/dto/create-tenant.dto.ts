@@ -3,30 +3,30 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
 
 export class CreateTenantDto {
-  @ApiProperty({ example: 'My Business', description: 'The name of the business.' })
+  @ApiProperty({ example: 'ACME Corporation', description: 'Your business or company name.' })
   @IsString()
   businessName: string;
 
-  @ApiProperty({ example: 'business@example.com', description: 'The email address of the business.' })
+  @ApiProperty({ example: 'admin@acmecorp.com', description: 'Email address for the business administrator account.' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'USD', description: 'The currency used by the business.' })
+  @ApiProperty({ example: 'USD', description: 'Primary currency for your business (USD, EUR, GBP, etc.).' })
   @IsString()
   currency: string;
 
-  @ApiProperty({ example: '+1234567890', description: 'The phone number of the business.' })
+  @ApiProperty({ example: '+1-555-123-4567', description: 'Primary business phone number.' })
   @IsString()
   phoneNumber: string;
 
-  @ApiProperty({ example: 'securepassword', description: 'The password for the tenant admin.' })
+  @ApiProperty({ example: 'MySecureP@ssw0rd123!', description: 'Password for the administrator account (minimum 6 characters).' })
   @IsString()
   @MinLength(6)
   password: string;
 
   @ApiProperty({ 
-    example: 'mybusiness.intellisales.com', 
-    description: 'Custom domain for the tenant (optional). If not provided, will be auto-generated from business name.',
+    example: undefined,
+    description: 'Custom domain (optional). Leave empty for auto-generated domain based on business name.',
     required: false
   })
   @IsString()

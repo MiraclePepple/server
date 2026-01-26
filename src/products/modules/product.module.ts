@@ -1,5 +1,6 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
+import { SharedModule } from '../../shared/modules/shared.module';
 import { Tenant } from '../../tenant/entities/tenancy.entity';
 import { ProductController } from '../controllers/product.controller';
 import { ProductService } from '../services/product.service';
@@ -15,6 +16,7 @@ import { Module } from '@nestjs/common/decorators/modules/module.decorator';
       secret: process.env.JWT_SECRET || 'changeme',
       signOptions: { expiresIn: '1d' },
     }),
+    SharedModule,
   ],
   providers: [ProductService, CategoryService],
   controllers: [ProductController, CategoryController],

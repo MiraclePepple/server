@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsNotEmpty, IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ProductType {
@@ -9,33 +9,61 @@ export enum ProductType {
 }
 
 export class CreateProductDto {
-  @ApiProperty({ example: 'Premium Coffee Beans', description: 'Product name.' })
+  @ApiProperty({ 
+    example: 'Organic Coffee Beans 1kg', 
+    description: 'Product name that customers will see' 
+  })
   @IsNotEmpty()
   @IsString()
   name: string;
 
-  @ApiPropertyOptional({ example: 'Premium quality coffee beans from Colombia', description: 'Product description.' })
+  @ApiPropertyOptional({ 
+    example: 'Premium quality coffee beans from Colombian highlands', 
+    description: 'Detailed product description for customers' 
+  })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ example: 'COF-PRM-1KG' })
+  @ApiPropertyOptional({ 
+    example: 'COF-ORG-1KG',
+    description: 'Stock Keeping Unit - your internal product code' 
+  })
   @IsString()
   @IsOptional()
   sku?: string;
 
-  @ApiPropertyOptional({ example: '012345678905' })
+  @ApiPropertyOptional({ 
+    example: '012345678905',
+    description: 'Product barcode (leave empty for auto-generation)' 
+  })
   @IsString()
   @IsOptional()
   barcode?: string;
 
-  @ApiProperty({ enum: ProductType, example: ProductType.SIMPLE })
+  @ApiProperty({ 
+    enum: ProductType, 
+    example: ProductType.SIMPLE,
+    description: 'Product type: simple=regular item, service=non-inventory, composite=bundle, inventory=tracked stock'
+  })
   @IsEnum(ProductType)
   type: ProductType;
 
-  @ApiProperty({ example: 29.99 })
+  @ApiProperty({ 
+    example: 24.99,
+    description: 'Retail selling price (what customers pay)'
+  })
   @IsNumber()
   price: number;
+
+  @ApiPropertyOptional({ example: 10, description: 'Low stock alert threshold' })
+  @IsNumber()
+  @IsOptional()
+  low_stock_threshold?: number;
+
+  @ApiPropertyOptional({ example: '2024-12-31', description: 'Product expiry date (YYYY-MM-DD)' })
+  @IsOptional()
+  expiry_date?: string;
 
   @ApiPropertyOptional({ example: false })
   @IsOptional()
@@ -45,6 +73,11 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   image_url?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-category-id', description: 'Category ID to assign product to' })
+  @IsUUID()
+  @IsOptional()
+  category_id?: string;
 }
 
 // Update Product DTO - all fields optional for partial updates
@@ -79,6 +112,15 @@ export class UpdateProductDto {
   @IsOptional()
   price?: number;
 
+  @ApiPropertyOptional({ example: 5, description: 'Update low stock threshold' })
+  @IsNumber()
+  @IsOptional()
+  low_stock_threshold?: number;
+
+  @ApiPropertyOptional({ example: '2024-12-31', description: 'Update expiry date (YYYY-MM-DD)' })
+  @IsOptional()
+  expiry_date?: string;
+
   @ApiPropertyOptional({ example: true })
   @IsOptional()
   is_composite?: boolean;
@@ -87,4 +129,9 @@ export class UpdateProductDto {
   @IsString()
   @IsOptional()
   image_url?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-category-id', description: 'Category ID to assign product to' })
+  @IsUUID()
+  @IsOptional()
+  category_id?: string;
 }

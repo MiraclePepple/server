@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Req, UseGuards, Body, Param, NotFoundException } from '@nestjs/common';
-import { ApiTags, ApiBody, ApiResponse, ApiBearerAuth, ApiHeader, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBody, ApiResponse, ApiBearerAuth, ApiHeader, ApiQuery, ApiOperation } from '@nestjs/swagger';
 import { ProductService } from '../services/product.service';
 import { JwtTenantGuard } from '../../auth/guards/jwt-tenant.guard';
 import { CreateProductDto, UpdateProductDto } from '../dto/create-product.dto';
@@ -12,6 +12,7 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
+  @ApiOperation({ summary: 'List All Products', description: 'Retrieve paginated list of products with barcode, pricing, and category information' })
   @ApiResponse({ status: 200, description: 'List products for tenant (paginated).' })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10, max: 100)' })
@@ -23,7 +24,39 @@ export class ProductController {
   }
 
   @Post()
-  @ApiBody({ type: CreateProductDto })
+  @ApiOperation({ summary: 'Create New Product', description: 'Add new product to inventory with details, pricing, and barcode generation' })
+  @ApiBody({ 
+    type: CreateProductDto,
+    examples: {
+      simpleProduct: {
+        summary: 'Simple Product',
+        description: 'Basic retail item with fixed pricing',
+        value: {
+          name: 'Organic Coffee Beans 1kg',
+          description: 'Premium organic coffee beans from Colombia',
+          sku: 'COF-ORG-1KG',
+          barcode: '012345678905',
+          type: 'simple',
+          price: 24.99,
+          cost: 15.50,
+          low_stock_threshold: 10,
+          tax_rate: 8.5
+        }
+      },
+      serviceItem: {
+        summary: 'Service Item',
+        description: 'Non-inventory service offering',
+        value: {
+          name: 'Coffee Machine Cleaning',
+          description: 'Professional espresso machine cleaning service',
+          type: 'service',
+          price: 45.00,
+          cost: 20.00,
+          tax_rate: 8.5
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 201, description: 'Product created.' })
   createProduct(
     @Req() req,
@@ -33,6 +66,7 @@ export class ProductController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get Product Details', description: 'Retrieve detailed product information including stock levels and pricing' })
   @ApiResponse({ status: 200, description: 'Product details.' })
   async getProductById(
     @Req() req,
@@ -42,6 +76,7 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update Product', description: 'Modify product information such as price, description, or category' })
   @ApiBody({ type: UpdateProductDto })
   @ApiResponse({ status: 200, description: 'Product updated.' })
   @ApiResponse({ status: 404, description: 'Product not found.' })
@@ -58,6 +93,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete Product', description: 'Remove product from catalog (soft delete to preserve transaction history)' })
   @ApiResponse({ status: 200, description: 'Product deleted.' })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   async deleteProduct(

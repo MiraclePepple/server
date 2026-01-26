@@ -221,8 +221,10 @@ describe('🚀 Super Integration Test - All Endpoints', () => {
         .set('Authorization', `Bearer ${tenantUserToken}`)
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.some(product => product.name === 'Super Test Product')).toBe(true);
+      expect(res.body).toHaveProperty('items');
+      expect(res.body).toHaveProperty('total');
+      expect(Array.isArray(res.body.items)).toBe(true);
+      expect(res.body.items.some(product => product.name === 'Super Test Product')).toBe(true);
     });
 
     it('🔍 Get Product Details - Should return product by ID', async () => {

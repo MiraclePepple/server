@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SharedModule } from '../../shared/modules/shared.module';
 import { SystemAdmin } from '../entities/system-admin.entity';
 import { SystemAdminController } from '../controllers/system-admin.controller';
 import { SystemAdminService } from '../services/system-admin.service';
@@ -10,7 +11,8 @@ import { TenantModule } from '../../tenant/modules/tenancy.module';
   imports: [
     TypeOrmModule.forFeature([SystemAdmin]),
     JwtModule, // Import JwtModule for guards
-    TenantModule
+    TenantModule,
+    SharedModule
   ],
   providers: [SystemAdminService],
   controllers: [SystemAdminController],

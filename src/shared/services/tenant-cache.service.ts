@@ -60,13 +60,24 @@ export class TenantCacheService {
 
   // Extract subdomain from full domain
   private extractSubdomain(domain: string): string {
+    // Handle localhost for development (use first tenant as fallback)
+    if (domain === 'localhost' || domain.startsWith('localhost:')) {
+      return 'localhost';
+    }
+    
     // e.g., "company1.intellisales.com" → "company1"
-    // e.g., "localhost:3000" → "localhost"
+    // e.g., "acme-corp.yourdomain.com" → "acme-corp"
     const parts = domain.split('.');
     return parts[0];
   }
 
   async getTenantByDomain(domain: string): Promise<Tenant | null> {
+    // Handle localhost development case - get the first available tenant
+    if (domain === 'localhost' || domain.startsWith('localhost:')) {
+      this.logger.debug(`Development mode: localhost access, finding first tenant`);
+      return this.getFirstAvailableTenant();
+    }
+
     // Extract subdomain (e.g., "company1" from "company1.intellisales.com")
     const subdomain = this.extractSubdomain(domain);
     
@@ -127,6 +138,26 @@ export class TenantCacheService {
       return tenant;
     } catch (error) {
       this.logger.error('Database query error:', error);
+      return null;
+    }
+  }
+
+  private async getFirstAvailableTenant(): Promise<Tenant | null> {
+    try {
+      const tenantRepo = MasterDataSource.getRepository(Tenant);
+      const tenant = await tenantRepo.findOne({
+        order: { created_at: 'ASC' } // Get the first created tenant
+      });
+      
+      if (tenant) {
+        this.logger.debug(`Found first tenant for localhost: ${tenant.business_name}`);
+        // Cache it for future requests
+        await this.cacheTenant(tenant);
+      }
+      
+      return tenant;
+    } catch (error) {
+      this.logger.error('Error fetching first tenant for localhost:', error);
       return null;
     }
   }

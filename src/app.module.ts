@@ -1,12 +1,13 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { TenantProvisioningService } from './tenant/services/tenancy.service';
-import { TenantCacheService } from './shared/services/tenant-cache.service';
-import { RedisService } from './shared/services/redis.service';
 import { TenantModule } from './tenant/modules/tenancy.module';
+import { SharedModule } from './shared/modules/shared.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tenant } from './tenant/entities/tenancy.entity';
 import { SystemAdmin } from './admin/entities/system-admin.entity';
 import { ProductModule } from './products/modules/product.module';
+import { InventoryModule } from './inventory/modules/inventory.module';
+import { CustomerModule } from './customers/modules/customer.module';
 import { AuthModule } from './auth/modules/auth.module';
 import { UserModule } from './users/modules/user.module';
 import { AdminModule } from './admin/modules/admin.module';
@@ -27,14 +28,17 @@ import { DomainTenantMiddleware } from './shared/middleware/domain-tenant.middle
       synchronize: true,
     }),
 
+    SharedModule, // Import SharedModule first
     TenantModule, 
     ProductModule,
+    InventoryModule,
+    CustomerModule,
     AuthModule,
     UserModule,
     AdminModule
   ],
   controllers: [], // Remove ProductController - it's provided by ProductModule
-  providers: [TenantProvisioningService, TenantCacheService, RedisService], // Add Redis and cache services
+  providers: [TenantProvisioningService], // Remove duplicate services since they're in SharedModule now
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

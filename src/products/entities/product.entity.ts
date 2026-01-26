@@ -29,6 +29,12 @@ export class Product {
   @Column('float')
   price: number;
 
+  @Column({ type: 'integer', default: 10 })
+  low_stock_threshold: number;
+
+  @Column({ type: 'date', nullable: true })
+  expiry_date?: Date;
+
   @Column({ default: false })
   is_composite: boolean;
 

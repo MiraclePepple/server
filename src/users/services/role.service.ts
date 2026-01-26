@@ -11,10 +11,14 @@ export class RoleService {
     const roleRepo = tenantConnection.getRepository(Role);
     const permissionRepo = tenantConnection.getRepository(Permission);
 
-    // Find permissions by names
-    const permissions = await permissionRepo.find({
-      where: createRoleDto.permissionNames.map(name => ({ name }))
-    });
+    let permissions = [];
+    
+    // Find permissions by names if provided
+    if (createRoleDto.permissionNames && createRoleDto.permissionNames.length > 0) {
+      permissions = await permissionRepo.find({
+        where: createRoleDto.permissionNames.map(name => ({ name }))
+      });
+    }
 
     const role = roleRepo.create({
       name: createRoleDto.name,

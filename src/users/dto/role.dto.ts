@@ -14,11 +14,13 @@ export class CreateRoleDto {
   @ApiProperty({ 
     example: ['create_sales', 'process_payments', 'print_receipts'], 
     description: 'Array of permission names to assign to this role',
-    type: [String]
+    type: [String],
+    required: false
   })
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  permissionNames: string[];
+  permissionNames?: string[];
 }
 
 export class UpdateRoleDto {

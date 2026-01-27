@@ -107,13 +107,47 @@ export class TenantService {
 
       const userRepo = tenantDataSource.getRepository(require('../../users/entities/user.entity').User);
       const roleRepo = tenantDataSource.getRepository(require('../../users/entities/role.entity').Role);
+      const permissionRepo = tenantDataSource.getRepository(require('../../users/entities/permission.entity').Permission);
 
-      let adminRole = await roleRepo.findOne({ where: { name: 'admin' } });
+      // Get all permissions to assign to admin role
+      const allPermissions = await permissionRepo.find();
+
+      let adminRole = await roleRepo.findOne({ where: { name: 'admin' }, relations: ['permissions'] });
       if (!adminRole) {
-        adminRole = roleRepo.create({ name: 'admin', description: 'Tenant Administrator' });
+        adminRole = roleRepo.create({ 
+          name: 'admin', 
+          description: 'Tenant Administrator with full access',
+          permissions: allPermissions // Assign ALL permissions to admin
+        });
         await roleRepo.save(adminRole);
+        this.logger.log('Admin role created with all permissions');
+      } else if (!adminRole.permissions || adminRole.permissions.length === 0) {
+        // If admin role exists but has no permissions, assign them
+        adminRole.permissions = allPermissions;
+        await roleRepo.save(adminRole);
+        this.logger.log('Permissions assigned to existing admin role');
       }
-      this.logger.log('Admin role ensured');
+
+      // Create basic cashier and manager roles (empty permissions - admin will assign)
+      let cashierRole = await roleRepo.findOne({ where: { name: 'cashier' } });
+      if (!cashierRole) {
+        cashierRole = roleRepo.create({ 
+          name: 'cashier', 
+          description: 'Cashier role - permissions to be assigned by admin'
+        });
+        await roleRepo.save(cashierRole);
+        this.logger.log('Cashier role created (no permissions yet)');
+      }
+
+      let managerRole = await roleRepo.findOne({ where: { name: 'manager' } });
+      if (!managerRole) {
+        managerRole = roleRepo.create({ 
+          name: 'manager', 
+          description: 'Manager role - permissions to be assigned by admin'
+        });
+        await roleRepo.save(managerRole);
+        this.logger.log('Manager role created (no permissions yet)');
+      }
 
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(data.password, 10);

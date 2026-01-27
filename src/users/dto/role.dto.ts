@@ -12,8 +12,8 @@ export class CreateRoleDto {
   description?: string;
 
   @ApiProperty({ 
-    example: ['create_sales', 'process_payments', 'print_receipts'], 
-    description: 'Array of permission names to assign to this role',
+    example: ['pos:create_sale', 'pos:read_sales', 'customers:create', 'customers:read', 'products:read'], 
+    description: 'Array of actual permission names from your system (use GET /permissions to see all available)',
     type: [String],
     required: false
   })
@@ -35,8 +35,8 @@ export class UpdateRoleDto {
   description?: string;
 
   @ApiProperty({ 
-    example: ['create_sales', 'process_payments', 'print_receipts', 'apply_discounts'], 
-    description: 'Array of permission names to assign to this role',
+    example: ['pos:create_sale', 'pos:read_sales', 'pos:discount', 'customers:create', 'customers:read', 'products:read', 'inventory:read'], 
+    description: 'Array of actual permission names from your system (use GET /permissions to see all available)',
     type: [String],
     required: false
   })

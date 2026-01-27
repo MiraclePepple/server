@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { CustomerService } from '../services/customer.service';
-import { TenantGuard } from '../../guards/tenant.guard';
+import { JwtTenantGuard } from '../../auth/guards/jwt-tenant.guard';
 import {
   CreateCustomerDto,
   UpdateCustomerDto,
@@ -13,7 +13,7 @@ import {
 @ApiTags('Customers')
 @ApiBearerAuth()
 @Controller('customers')
-@UseGuards(TenantGuard)
+@UseGuards(JwtTenantGuard)
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 

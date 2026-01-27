@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { InventoryService } from '../services/inventory.service';
-import { TenantGuard } from '../../guards/tenant.guard';
+import { JwtTenantGuard } from '../../auth/guards/jwt-tenant.guard';
 import {
   StockAdjustmentDto,
   StockTransferDto,
@@ -20,7 +20,7 @@ import {
 @ApiTags('Inventory Management')
 @ApiBearerAuth('JWT-auth')
 @Controller('inventory')
-@UseGuards(TenantGuard)
+@UseGuards(JwtTenantGuard)
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
